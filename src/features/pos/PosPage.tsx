@@ -24,7 +24,7 @@ import { parsePosBarcode, buildScaleEan13Label, type ScaleBarcodeEncoding } from
 import { ScaleSerialService, type ScaleReading } from '@/features/pos/scaleSerialService';
 import { Decimal, formatBRL, formatQuantity, lineTotal, SCALE, toDb } from '@/lib/decimal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useAuthStore } from '@/stores/authStore';
+import { defaultRouteForRole, useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
 import { pullSupabaseToLocalCache } from '@/lib/supabaseSync';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,16 @@ export function PosPage() {
   const navigate = useNavigate();
   const isOnline = useOnlineStatus();
   const profile = useAuthStore((s) => s.profile);
+  const switchRoleForDemo = useAuthStore((s) => s.switchRoleForDemo);
+
+  const handleExitToErp = useCallback(() => {
+    if (!profile || profile.role === 'CAIXA') {
+      void switchRoleForDemo('ADMIN');
+      navigate('/dashboard');
+      return;
+    }
+    navigate(defaultRouteForRole(profile.role));
+  }, [profile, switchRoleForDemo, navigate]);
 
   const sellableItems = useLiveQuery(
     () => localDb.items.filter((i) => i.active && i.type !== 'INSUMO').toArray(),
@@ -373,10 +383,11 @@ export function PosPage() {
       <header className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/20 bg-black px-3 py-2.5 sm:px-5 sm:py-3 pt-safe">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <Button
+            type="button"
             variant="outline"
             size="sm"
-            onClick={() => navigate('/dashboard')}
-            className="border-white/30 bg-zinc-900 px-2.5 text-white hover:bg-zinc-800"
+            onClick={handleExitToErp}
+            className="cursor-pointer border-white/30 bg-zinc-900 px-2.5 text-white hover:bg-zinc-800"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Retaguarda ERP</span>
@@ -387,7 +398,7 @@ export function PosPage() {
               PDV FLOR DO TRIGO
             </h1>
             <p className="hidden text-xs text-zinc-400 sm:block">
-              Operador: {profile?.full_name} • Atalhos F2..F12 ativos
+              Operador: {profile?.full_name} ({profile?.role}) • Atalhos F2..F12 ativos
             </p>
           </div>
         </div>

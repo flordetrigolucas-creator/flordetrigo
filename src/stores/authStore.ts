@@ -84,13 +84,14 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const desiredRole = get().profile?.role ?? 'ADMIN';
+          const expectedId = DEMO_PROFILES[desiredRole].id;
           const {
             data: { session },
           } = await supabase.auth.getSession();
 
           let userId = session?.user?.id;
 
-          if (!userId) {
+          if (!userId || userId !== expectedId) {
             const creds = ROLE_CREDENTIALS[desiredRole];
             const signRes = await supabase.auth.signInWithPassword(creds);
             userId = signRes.data.user?.id;
@@ -171,7 +172,7 @@ export function canAccess(userRole: UserRole | undefined | null, allowedRoles: r
 export function defaultRouteForRole(role: UserRole): string {
   switch (role) {
     case 'CAIXA':
-      return '/pos';
+      return '/perdas';
     case 'PADEIRO':
       return '/pcp';
     case 'ATENDENTE':
