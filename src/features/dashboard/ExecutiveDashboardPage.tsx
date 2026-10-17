@@ -135,18 +135,18 @@ export function ExecutiveDashboardPage() {
   }, [batches, items]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-3.5 sm:space-y-6 sm:p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
           Painel Executivo: DRE Gerencial, Desvio de CMV & Curva ABC de Pareto (80/15/5)
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground sm:text-sm">
           Monitoramento contábil em tempo real cruzando Ficha Técnica (CMV Teórico) vs. Kardex de Estoque (CMV Real).
         </p>
       </div>
 
       {/* KPIs Executivos */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
@@ -206,17 +206,19 @@ export function ExecutiveDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-12">
         {/* Curva ABC de Lucro Líquido */}
-        <Card className="lg:col-span-8">
+        <Card className="lg:col-span-8 overflow-hidden">
           <CardHeader>
-            <CardTitle>Curva ABC de Contribuição Líquida (Produtos que geram 80% do Lucro)</CardTitle>
+            <CardTitle className="text-base sm:text-lg">
+              Curva ABC de Contribuição Líquida (Produtos que geram 80% do Lucro)
+            </CardTitle>
             <CardDescription>
               Classificação de Pareto calculada sobre a margem de contribuição real de cada SKU.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-[680px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Classe</TableHead>

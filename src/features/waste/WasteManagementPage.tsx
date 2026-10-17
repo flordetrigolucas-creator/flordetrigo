@@ -101,36 +101,36 @@ export function WasteManagementPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-5 p-3.5 sm:space-y-6 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             Gestão de Perdas & Reaproveitamento (OP Reversa)
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground sm:text-sm">
             Transforme sobras de produção em subprodutos mantendo a integridade contábil do DRE via RPC{' '}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">transform_waste_product</code>.
           </p>
         </div>
 
-        <Button variant="outline" onClick={handleQuickPresetBreadToCrumbs}>
-          <Sparkles className="h-4 w-4 text-amber-600" /> Preset: 10kg Pão Dormido → 8,5kg Farinha de Rosca
+        <Button variant="outline" className="w-full sm:w-auto text-xs sm:text-sm" onClick={handleQuickPresetBreadToCrumbs}>
+          <Sparkles className="h-4 w-4 shrink-0 text-amber-600" /> Preset: 10kg Pão Dormido → 8,5kg Farinha de Rosca
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="lg:col-span-6">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-12">
+        <Card className="lg:col-span-6 overflow-hidden">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Lançar Transformação ou Descarte</CardTitle>
-              <div className="flex gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-base sm:text-lg">Lançar Transformação ou Descarte</CardTitle>
+              <div className="grid grid-cols-2 gap-2 sm:flex">
                 <Button
                   type="button"
                   size="sm"
                   variant={mode === 'TRANSFORMACAO' ? 'default' : 'outline'}
                   onClick={() => setMode('TRANSFORMACAO')}
                 >
-                  <Recycle className="h-4 w-4" /> Transformar (OP Reversa)
+                  <Recycle className="h-4 w-4 shrink-0" /> Transformar
                 </Button>
                 <Button
                   type="button"
@@ -138,7 +138,7 @@ export function WasteManagementPage() {
                   variant={mode === 'DESCARTE_PERDA' ? 'destructive' : 'outline'}
                   onClick={() => setMode('DESCARTE_PERDA')}
                 >
-                  <Trash2 className="h-4 w-4" /> Descarte / Quebra
+                  <Trash2 className="h-4 w-4 shrink-0" /> Descarte
                 </Button>
               </div>
             </div>
@@ -148,8 +148,8 @@ export function WasteManagementPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="rounded-xl border bg-muted/40 p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="rounded-xl border bg-muted/40 p-3.5 sm:p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <Label className="font-semibold">1. Produto de Origem (Saída FEFO)</Label>
                   {selectedSource && (
                     <Badge variant="outline">
@@ -227,11 +227,11 @@ export function WasteManagementPage() {
               )}
 
               {/* Resumo Contábil antes de gravar */}
-              <div className="rounded-xl border bg-card p-4">
+              <div className="rounded-xl border bg-card p-3.5 sm:p-4">
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Espelho Contábil da Operação (Impacto DRE)
                 </p>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
                   <span>
                     Saída:{' '}
                     <strong>
@@ -239,13 +239,13 @@ export function WasteManagementPage() {
                     </strong>{' '}
                     de {selectedSource?.name}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="hidden h-4 w-4 text-muted-foreground sm:inline" />
                   <span>
                     Custo Contábil: <strong>{formatBRL(accountingPreview.transferredCost)}</strong>
                   </span>
                 </div>
                 {mode === 'TRANSFORMACAO' && (
-                  <div className="mt-2 flex items-center justify-between border-t pt-2 text-xs text-emerald-800">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t pt-2 text-xs text-emerald-800">
                     <span>
                       Aproveitamento Técnico: <strong>{formatPercent(accountingPreview.yieldPct)}</strong>
                     </span>
@@ -270,10 +270,10 @@ export function WasteManagementPage() {
                 type="submit"
                 size="lg"
                 variant={mode === 'TRANSFORMACAO' ? 'default' : 'destructive'}
-                className="w-full"
+                className="w-full text-xs sm:text-sm"
                 disabled={isExecuting}
               >
-                <CheckCircle2 className="h-5 w-5" />
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
                 {mode === 'TRANSFORMACAO'
                   ? 'Executar Transformação e Transferir Custo Contábil'
                   : 'Registrar Baixa por Perda no DRE'}
@@ -283,18 +283,18 @@ export function WasteManagementPage() {
         </Card>
 
         {/* Histórico de Perdas e Transformações */}
-        <Card className="lg:col-span-6">
+        <Card className="lg:col-span-6 overflow-hidden">
           <CardHeader>
-            <CardTitle>Histórico de Reaproveitamento & Quebras</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Histórico de Reaproveitamento & Quebras</CardTitle>
             <CardDescription>Rastreabilidade completa de custos transferidos ou baixados.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             {wasteHistory.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
                 Nenhum movimento registrado ainda nesta sessão. Clique no preset acima e execute para testar!
               </p>
             ) : (
-              <Table>
+              <Table className="min-w-[460px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tipo</TableHead>

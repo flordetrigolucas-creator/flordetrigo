@@ -235,22 +235,22 @@ export function TechnicalSheetsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-5 p-3.5 sm:space-y-6 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             Engenharia de Cardápio & Ficha Técnica (Baker&apos;s Percentage)
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground sm:text-sm">
             A farinha é sempre a base 100%. Hidratação, CMV unitário e margem de contribuição recalculados em tempo real.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <select
             value={selectedSheetId}
             onChange={(e) => setSelectedSheetId(e.target.value)}
-            className="h-9 rounded-md border border-input bg-card px-3 text-sm font-medium"
+            className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm font-medium sm:h-9 sm:w-auto"
           >
             {sheets.map((s) => (
               <option key={s.id} value={s.id}>
@@ -258,17 +258,17 @@ export function TechnicalSheetsPage() {
               </option>
             ))}
           </select>
-          <Button variant="outline" onClick={handleCreateNewSheet}>
+          <Button variant="outline" className="flex-1 sm:flex-initial" onClick={handleCreateNewSheet}>
             <Plus className="h-4 w-4" /> Nova Receita
           </Button>
-          <Button onClick={form.handleSubmit(onSubmit)}>
-            <Save className="h-4 w-4" /> Salvar Ficha Técnica
+          <Button className="flex-1 sm:flex-initial" onClick={form.handleSubmit(onSubmit)}>
+            <Save className="h-4 w-4" /> Salvar Ficha
           </Button>
         </div>
       </div>
 
       {/* KPIs de Engenharia da Ficha */}
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1.5">
@@ -404,11 +404,11 @@ export function TechnicalSheetsPage() {
         </Card>
 
         {/* Tabela de Ingredientes com Baker's Percentage */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="lg:col-span-2 overflow-hidden">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Scale className="h-5 w-5 text-primary" /> Composição da Receita & Baker&apos;s Percentage
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Scale className="h-5 w-5 shrink-0 text-primary" /> Composição da Receita & Baker&apos;s Percentage
               </CardTitle>
               <CardDescription>
                 Quantidades salvas sempre na unidade base (g ou ml). O percentual é calculado sobre a farinha base.
@@ -418,6 +418,7 @@ export function TechnicalSheetsPage() {
               type="button"
               variant="outline"
               size="sm"
+              className="w-full sm:w-auto shrink-0"
               onClick={() =>
                 append({
                   ingredient_id: rawMaterials[0]?.id ?? '',
@@ -428,8 +429,8 @@ export function TechnicalSheetsPage() {
               <Plus className="h-4 w-4" /> Adicionar Insumo
             </Button>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-[640px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Insumo (Unidade Base)</TableHead>

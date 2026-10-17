@@ -16,6 +16,8 @@ import {
   RefreshCw,
   Tag,
   Usb,
+  ShoppingCart,
+  LayoutGrid,
 } from 'lucide-react';
 import { localDb, type OfflinePendingSaleItem } from '@/lib/offlineDb';
 import { parsePosBarcode, buildScaleEan13Label, type ScaleBarcodeEncoding } from '@/features/pos/scaleBarcodeParser';
@@ -62,12 +64,15 @@ export function PosPage() {
   const [discountBrl, setDiscountBrl] = useState<number>(0);
   const [selectedB2bCustomerId, setSelectedB2bCustomerId] = useState<string>('');
   const [isSyncingQueue, setIsSyncingQueue] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'CATALOG' | 'CART'>('CATALOG');
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Mantém foco automático no leitor de código de barras
+  // Mantém foco automático no leitor apenas em dispositivos desktop (evita abrir teclado virtual no iOS/Android ao tocar em cards)
   const focusScannerInput = useCallback(() => {
-    inputRef.current?.focus();
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
+      inputRef.current?.focus();
+    }
   }, []);
 
   useEffect(() => {
@@ -137,7 +142,10 @@ export function PosPage() {
 
     // Código de barras comercial (EAN-13 / SKU / PLU direto)
     const matched = sellableItems.find(
-      (i) => i.barcode === parsed.rawCode || i.sku.toLowerCase() === parsed.rawCode.toLowerCase() || i.scale_plu === parsed.rawCode,
+      (i) =>
+        i.barcode === parsed.rawCode ||
+        i.sku.toLowerCase() === parsed.rawCode.toLowerCase() ||
+        i.scale_plu === parsed.rawCode,
     );
 
     if (!matched) {
@@ -256,6 +264,7 @@ export function PosPage() {
 
       setCart([]);
       setDiscountBrl(0);
+      setMobileTab('CATALOG');
       toast.success(
         `Venda concluída no ${paymentMethod} (${formatBRL(totals.total)}) • ${
           syncedWithSupabase === 1
@@ -309,7 +318,7 @@ export function PosPage() {
       switch (e.key) {
         case 'F2':
           e.preventDefault();
-          focusScannerInput();
+          inputRef.current?.focus();
           break;
         case 'F4': {
           e.preventDefault();
@@ -319,11 +328,10 @@ export function PosPage() {
         }
         case 'F6': {
           e.preventDefault();
-          // Simula leitura de etiqueta EAN-13 prefixo 2 de Pão Francês (PLU 0101, 380g)
           const label = buildScaleEan13Label({ plu: '0101', payloadValue: 380 });
           setBarcodeInput(label);
           toast.info(`Etiqueta EAN-13 gerada no leitor: ${label} (Pressione Enter)`);
-          focusScannerInput();
+          inputRef.current?.focus();
           break;
         }
         case 'F7':
@@ -357,47 +365,50 @@ export function PosPage() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [focusScannerInput, finalizeSale]);
+  }, [finalizeSale]);
 
   return (
-    <div className="theme-pos flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
-      {/* Topbar de Missão Crítica */}
-      <header className="flex items-center justify-between border-b border-white/20 bg-black px-5 py-3">
-        <div className="flex items-center gap-3">
+    <div className="theme-pos flex min-h-[100dvh] w-full flex-col bg-background text-foreground lg:h-[100dvh] lg:overflow-hidden">
+      {/* Topbar de Missão Crítica Responsiva */}
+      <header className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/20 bg-black px-3 py-2.5 sm:px-5 sm:py-3 pt-safe">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate('/dashboard')}
-            className="border-white/30 bg-zinc-900 text-white hover:bg-zinc-800"
+            className="border-white/30 bg-zinc-900 px-2.5 text-white hover:bg-zinc-800"
           >
-            <ArrowLeft className="h-4 w-4" /> Retaguarda ERP
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Retaguarda ERP</span>
+            <span className="sm:hidden">Voltar</span>
           </Button>
           <div>
-            <h1 className="text-lg font-extrabold tracking-wide text-amber-400">
-              PDV FLOR DO TRIGO • BALCÃO RÁPIDO
+            <h1 className="text-sm font-extrabold tracking-wide text-amber-400 sm:text-lg">
+              PDV FLOR DO TRIGO
             </h1>
-            <p className="text-xs text-zinc-400">
+            <p className="hidden text-xs text-zinc-400 sm:block">
               Operador: {profile?.full_name} • Atalhos F2..F12 ativos
             </p>
           </div>
         </div>
 
         {/* Display Ao Vivo da Balança Serial + Conexão */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-3 rounded-xl border-2 border-amber-400/60 bg-zinc-950 px-4 py-1.5">
-            <Scale className="h-6 w-6 text-amber-400" />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 rounded-xl border-2 border-amber-400/60 bg-zinc-950 px-2.5 py-1 sm:gap-3 sm:px-4 sm:py-1.5">
+            <Scale className="h-5 w-5 shrink-0 text-amber-400 sm:h-6 sm:w-6" />
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 sm:text-[10px]">
                 Balança ({scaleReading.source})
               </p>
-              <p className="font-mono text-2xl font-extrabold text-amber-400">
+              <p className="font-mono text-base font-extrabold text-amber-400 sm:text-2xl">
                 {scaleReading.weightKg.toFixed(3)} kg{' '}
-                <span className="text-xs text-zinc-400">({scaleReading.weightGrams} g)</span>
+                <span className="hidden text-xs text-zinc-400 sm:inline">({scaleReading.weightGrams} g)</span>
               </p>
             </div>
             <Button
               size="sm"
               variant="default"
+              className="h-8 px-2.5 text-xs"
               onClick={() => {
                 const r = ScaleSerialService.simulateWeightReading();
                 toast.success(`Peso simulado no prato: ${r.weightGrams}g`);
@@ -405,12 +416,12 @@ export function PosPage() {
               }}
               title="Atalho: F4"
             >
-              Simular Peso (F4)
+              Simular Peso
             </Button>
             <Button
               size="sm"
               variant="outline"
-              className="border-white/30 text-white"
+              className="hidden h-8 border-white/30 px-2.5 text-xs text-white md:inline-flex"
               onClick={async () => {
                 try {
                   await ScaleSerialService.connectHardwareScale();
@@ -420,19 +431,19 @@ export function PosPage() {
                 }
               }}
             >
-              <Usb className="h-4 w-4" /> Porta Serial
+              <Usb className="h-3.5 w-3.5" /> Serial
             </Button>
           </div>
 
           {/* Badge de Contingência Offline + Sincronização */}
-          <div className="flex items-center gap-2 rounded-xl border border-white/20 bg-zinc-900 px-3 py-2">
+          <div className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-zinc-900 px-2.5 py-1.5">
             {isOnline ? (
-              <Badge variant="success" className="gap-1">
-                <Wifi className="h-3.5 w-3.5" /> ONLINE
+              <Badge variant="success" className="gap-1 text-[10px]">
+                <Wifi className="h-3 w-3" /> ONLINE
               </Badge>
             ) : (
-              <Badge variant="warning" className="gap-1">
-                <WifiOff className="h-3.5 w-3.5" /> CONTINGÊNCIA OFFLINE
+              <Badge variant="warning" className="gap-1 text-[10px]">
+                <WifiOff className="h-3 w-3" /> OFFLINE
               </Badge>
             )}
             <Button
@@ -443,30 +454,63 @@ export function PosPage() {
               className="h-7 px-2 text-xs text-zinc-200 hover:bg-zinc-800"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isSyncingQueue ? 'animate-spin' : ''}`} />
-              Fila ({pendingOfflineSales.length})
+              <span>({pendingOfflineSales.length})</span>
             </Button>
           </div>
         </div>
       </header>
 
+      {/* Seletor de Abas Mobile/Tablet (< lg) */}
+      <div className="grid grid-cols-2 gap-2 border-b border-white/15 bg-zinc-950 px-3 py-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileTab('CATALOG')}
+          className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-extrabold uppercase tracking-wider transition ${
+            mobileTab === 'CATALOG'
+              ? 'bg-amber-400 text-black shadow'
+              : 'border border-white/15 bg-zinc-900 text-zinc-300'
+          }`}
+        >
+          <LayoutGrid className="h-4 w-4" /> Catálogo & Scanner
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('CART')}
+          className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-extrabold uppercase tracking-wider transition ${
+            mobileTab === 'CART'
+              ? 'bg-amber-400 text-black shadow'
+              : 'border border-white/15 bg-zinc-900 text-zinc-300'
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" /> Cupom ({cart.length}) • {formatBRL(totals.total)}
+        </button>
+      </div>
+
       {/* Corpo do PDV */}
-      <div className="grid flex-1 grid-cols-12 gap-4 overflow-hidden p-4">
+      <div className="grid flex-1 grid-cols-1 gap-4 p-3 sm:p-4 lg:grid-cols-12 lg:overflow-hidden">
         {/* Esquerda: Scanner EAN-13 + Teclado Touch de Produtos */}
-        <div className="col-span-7 flex flex-col gap-4 overflow-hidden">
-          <form onSubmit={handleBarcodeSubmit} className="space-y-2 rounded-2xl border-2 border-amber-400 bg-zinc-900 p-4">
-            <div className="flex items-center justify-between text-xs text-zinc-300">
+        <div
+          className={`${
+            mobileTab === 'CATALOG' ? 'flex' : 'hidden lg:flex'
+          } flex-col gap-3 sm:gap-4 lg:col-span-7 lg:overflow-hidden`}
+        >
+          <form
+            onSubmit={handleBarcodeSubmit}
+            className="space-y-2.5 rounded-2xl border-2 border-amber-400 bg-zinc-900 p-3 sm:p-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-300">
               <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-amber-400">
-                <Barcode className="h-4 w-4" /> Leitor EAN-13 / Etiqueta Balança (Prefixo 2) / PLU (F2)
+                <Barcode className="h-4 w-4 shrink-0" /> Leitor EAN-13 / Balança (Prefixo 2) / PLU
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() =>
                     setScaleEncoding((m) => (m === 'WEIGHT_GRAMS' ? 'TOTAL_PRICE_CENTS' : 'WEIGHT_GRAMS'))
                   }
-                  className="rounded border border-white/20 bg-zinc-800 px-2 py-0.5 text-[11px] font-mono text-amber-300"
+                  className="rounded border border-white/20 bg-zinc-800 px-2 py-1 text-[11px] font-mono text-amber-300"
                 >
-                  Modo Etiqueta 2: {scaleEncoding === 'WEIGHT_GRAMS' ? '5 díg = PESO (g)' : '5 díg = VALOR (R$)'}
+                  Modo: {scaleEncoding === 'WEIGHT_GRAMS' ? 'PESO (g)' : 'VALOR (R$)'}
                 </button>
                 <button
                   type="button"
@@ -478,9 +522,9 @@ export function PosPage() {
                     setBarcodeInput(label);
                     focusScannerInput();
                   }}
-                  className="inline-flex items-center gap-1 rounded bg-amber-400/20 px-2 py-0.5 text-[11px] font-bold text-amber-300 hover:bg-amber-400/30"
+                  className="inline-flex items-center gap-1 rounded bg-amber-400/20 px-2 py-1 text-[11px] font-bold text-amber-300 hover:bg-amber-400/30"
                 >
-                  <Tag className="h-3 w-3" /> Gerar Etiqueta Pão 380g (F6)
+                  <Tag className="h-3 w-3" /> Simular Etiqueta Pão 380g
                 </button>
               </div>
             </div>
@@ -490,18 +534,18 @@ export function PosPage() {
                 ref={inputRef}
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
-                placeholder="Bipe a etiqueta EAN-13 (ex: 2010100038009) ou digite o PLU..."
-                className="h-14 border-2 border-white/30 bg-black font-mono text-2xl font-bold text-white placeholder:text-zinc-600"
+                placeholder="Bipe EAN-13 (2010100038009) ou PLU..."
+                className="h-12 sm:h-14 border-2 border-white/30 bg-black font-mono text-lg sm:text-2xl font-bold text-white placeholder:text-zinc-600"
               />
-              <Button type="submit" size="xl" className="shrink-0">
+              <Button type="submit" size="xl" className="h-12 sm:h-14 shrink-0 px-4 sm:px-6">
                 Lançar
               </Button>
             </div>
           </form>
 
           {/* Grade Touch Screen de Produtos Rápidos */}
-          <div className="flex-1 overflow-y-auto pr-1">
-            <div className="grid grid-cols-3 gap-3">
+          <div className="flex-1 pb-20 lg:overflow-y-auto lg:pb-0 lg:pr-1">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3 sm:gap-3">
               {sellableItems.map((item) => (
                 <button
                   key={item.id}
@@ -510,12 +554,14 @@ export function PosPage() {
                     if (item.is_weighed) {
                       const grams = scaleReading.weightGrams > 0 ? scaleReading.weightGrams : 350;
                       addItemToCart(item, grams);
+                      toast.success(`${item.name} (+${(grams / 1000).toFixed(3)} kg) adicionado!`);
                     } else {
                       addItemToCart(item, 1);
+                      toast.success(`${item.name} (+1 un) adicionado!`);
                     }
                     focusScannerInput();
                   }}
-                  className="touch-target flex flex-col justify-between rounded-2xl border-2 border-white/20 bg-zinc-900 p-4 text-left transition hover:border-amber-400 hover:bg-zinc-800 active:scale-[0.99]"
+                  className="touch-target no-touch-callout flex flex-col justify-between rounded-2xl border-2 border-white/20 bg-zinc-900 p-3.5 sm:p-4 text-left transition hover:border-amber-400 hover:bg-zinc-800 active:scale-[0.99]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span className="font-mono text-xs font-bold text-zinc-400">
@@ -525,7 +571,7 @@ export function PosPage() {
                       {item.is_weighed ? 'BALANÇA (KG)' : 'UNIDADE'}
                     </Badge>
                   </div>
-                  <p className="my-2 line-clamp-2 text-base font-extrabold text-white">{item.name}</p>
+                  <p className="my-1.5 sm:my-2 line-clamp-2 text-base font-extrabold text-white">{item.name}</p>
                   <div className="flex items-baseline justify-between border-t border-white/10 pt-2">
                     <span className="text-xs text-zinc-400">
                       Est: {formatQuantity(item.current_stock, item.base_unit)}
@@ -542,7 +588,11 @@ export function PosPage() {
         </div>
 
         {/* Direita: Cupom Fiscal & Finalizadores de Pagamento */}
-        <div className="col-span-5 flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-white/25 bg-zinc-950 p-4">
+        <div
+          className={`${
+            mobileTab === 'CART' ? 'flex' : 'hidden lg:flex'
+          } flex-col justify-between rounded-2xl border-2 border-white/25 bg-zinc-950 p-3.5 sm:p-4 lg:col-span-5 lg:overflow-hidden pb-safe`}
+        >
           <div className="flex items-center justify-between border-b border-white/15 pb-3">
             <span className="text-sm font-bold uppercase tracking-wider text-zinc-300">
               Cupom de Venda ({cart.length} itens)
@@ -558,21 +608,21 @@ export function PosPage() {
           </div>
 
           {/* Lista de Itens do Cupom */}
-          <div className="my-3 flex-1 space-y-2 overflow-y-auto pr-1">
+          <div className="my-3 min-h-[200px] flex-1 space-y-2 overflow-y-auto pr-1">
             {cart.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center text-zinc-500">
+              <div className="flex h-full min-h-[180px] flex-col items-center justify-center text-center text-zinc-500">
                 <Barcode className="mb-2 h-12 w-12 opacity-40" />
                 <p className="text-base font-semibold">Caixa Livre</p>
-                <p className="text-xs">Bipe um código de barras, pressione F6 ou toque em um produto.</p>
+                <p className="text-xs">Bipe um código de barras ou toque em um produto no catálogo.</p>
               </div>
             ) : (
               cart.map((line, index) => (
                 <div
                   key={line.lineId}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-zinc-900 px-3 py-2.5"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-zinc-900 px-3 py-2.5"
                 >
-                  <div>
-                    <p className="text-sm font-bold text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-white">
                       {index + 1}. {line.name}
                     </p>
                     <p className="font-mono text-xs text-zinc-400">
@@ -581,14 +631,15 @@ export function PosPage() {
                         : `${line.quantity} un × ${formatBRL(line.unit_price)}`}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-lg font-extrabold text-amber-400">
+                  <div className="flex shrink-0 items-center gap-2.5">
+                    <span className="font-mono text-base sm:text-lg font-extrabold text-amber-400">
                       {formatBRL(line.total_price)}
                     </span>
                     <button
                       type="button"
                       onClick={() => setCart((c) => c.filter((i) => i.lineId !== line.lineId))}
-                      className="text-zinc-500 hover:text-red-400"
+                      className="p-1 text-zinc-400 hover:text-red-400"
+                      aria-label="Remover item"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -600,7 +651,7 @@ export function PosPage() {
 
           {/* Totalizador Gigante + Meios de Pagamento */}
           <div className="space-y-3 border-t border-white/20 pt-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div>
                 <label className="text-[11px] font-semibold uppercase text-zinc-400">Desconto (R$)</label>
                 <Input
@@ -609,7 +660,7 @@ export function PosPage() {
                   min="0"
                   value={discountBrl || ''}
                   onChange={(e) => setDiscountBrl(Number(e.target.value))}
-                  className="h-9 bg-zinc-900 font-mono text-white"
+                  className="h-10 bg-zinc-900 font-mono text-white"
                 />
               </div>
               <div>
@@ -619,7 +670,7 @@ export function PosPage() {
                 <select
                   value={selectedB2bCustomerId}
                   onChange={(e) => setSelectedB2bCustomerId(e.target.value)}
-                  className="h-9 w-full rounded-md border border-white/25 bg-zinc-900 px-2 text-xs text-white"
+                  className="h-10 w-full rounded-md border border-white/25 bg-zinc-900 px-2 text-xs text-white"
                 >
                   <option value="">Balcão Consumidor Final</option>
                   {b2bCustomers.map((c) => (
@@ -632,11 +683,15 @@ export function PosPage() {
             </div>
 
             <div className="flex items-baseline justify-between rounded-2xl bg-black px-4 py-3">
-              <span className="text-sm font-bold uppercase tracking-wider text-zinc-400">Total a Pagar</span>
-              <span className="font-mono text-pos-total text-amber-400">{formatBRL(totals.total)}</span>
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
+                Total a Pagar
+              </span>
+              <span className="font-mono text-2xl sm:text-pos-total font-extrabold text-amber-400">
+                {formatBRL(totals.total)}
+              </span>
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
               <Button
                 size="xl"
                 className="flex-col gap-1 bg-emerald-500 px-2 text-black hover:bg-emerald-400"
@@ -671,7 +726,7 @@ export function PosPage() {
               </Button>
               <Button
                 size="xl"
-                className="flex-col gap-1 bg-purple-500 px-2 text-white hover:bg-purple-400"
+                className="col-span-2 sm:col-span-1 flex-col gap-1 bg-purple-500 px-2 text-white hover:bg-purple-400"
                 onClick={() => finalizeSale('FATURADO_B2B')}
               >
                 <Building2 className="h-5 w-5" />
@@ -681,7 +736,22 @@ export function PosPage() {
           </div>
         </div>
       </div>
+
+      {/* Barra Flutuante Inferior no Mobile quando há itens no cupom */}
+      {mobileTab === 'CATALOG' && cart.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-amber-400/40 bg-black/95 p-3 backdrop-blur-md lg:hidden pb-safe">
+          <Button
+            size="xl"
+            className="w-full justify-between bg-amber-400 px-4 text-black hover:bg-amber-300"
+            onClick={() => setMobileTab('CART')}
+          >
+            <span className="flex items-center gap-2 font-extrabold">
+              <ShoppingCart className="h-5 w-5" /> Ver Cupom ({cart.length} {cart.length === 1 ? 'item' : 'itens'})
+            </span>
+            <span className="font-mono text-lg font-extrabold">{formatBRL(totals.total)} →</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
-

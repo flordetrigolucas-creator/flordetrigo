@@ -10,6 +10,7 @@ import {
   Play,
   Phone,
   Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 import { localDb } from '@/lib/offlineDb';
 import { supabase } from '@/lib/supabase';
@@ -38,6 +39,7 @@ export function CrmInboxPage() {
   const customers = useLiveQuery(() => localDb.customers.toArray(), [], []);
 
   const [activeConvId, setActiveConvId] = useState<string>('70000000-0000-4000-a000-000000000001');
+  const [mobileShowChat, setMobileShowChat] = useState<boolean>(true);
   const [messageInput, setMessageInput] = useState<string>('');
   const [webhookOutputJson, setWebhookOutputJson] = useState<string>('');
 
@@ -182,22 +184,26 @@ export function CrmInboxPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-5 p-3.5 sm:space-y-6 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             CRM B2B/B2C, Inbox WhatsApp Realtime & Gateway de IA (n8n / Evolution API)
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Monitore o Agente de IA ao vivo, faça transbordo humano com 1 clique e audite os limites de crédito corporativos B2B.
           </p>
         </div>
       </div>
 
-      {/* Inbox Estilo WhatsApp Web */}
-      <div className="grid h-[560px] grid-cols-12 overflow-hidden rounded-2xl border bg-card shadow-sm">
+      {/* Inbox Estilo WhatsApp Web (Master-Detail no Mobile e Lado-a-Lado no Tablet/Desktop) */}
+      <div className="grid h-[540px] sm:h-[580px] grid-cols-1 md:grid-cols-12 overflow-hidden rounded-2xl border bg-card shadow-sm">
         {/* Lista de Conversas */}
-        <div className="col-span-4 flex flex-col border-r">
+        <div
+          className={`${
+            mobileShowChat ? 'hidden md:flex' : 'flex'
+          } flex-col border-r md:col-span-4 overflow-hidden`}
+        >
           <div className="border-b bg-muted/40 px-4 py-3">
             <p className="text-sm font-bold">Conversas Ativas (Evolution API)</p>
             <p className="text-xs text-muted-foreground">Sincronizado via Supabase Realtime</p>
@@ -207,14 +213,19 @@ export function CrmInboxPage() {
               <button
                 key={conv.id}
                 type="button"
-                onClick={() => setActiveConvId(conv.id)}
+                onClick={() => {
+                  setActiveConvId(conv.id);
+                  setMobileShowChat(true);
+                }}
                 className={`w-full px-4 py-3.5 text-left transition hover:bg-muted/60 ${
                   activeConv?.id === conv.id ? 'bg-amber-500/10' : ''
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-sm">{conv.contact_name ?? conv.whatsapp_phone}</span>
-                  <Badge variant={conv.status === 'IA_ATIVA' ? 'success' : 'warning'} className="text-[10px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-semibold text-sm">
+                    {conv.contact_name ?? conv.whatsapp_phone}
+                  </span>
+                  <Badge variant={conv.status === 'IA_ATIVA' ? 'success' : 'warning'} className="shrink-0 text-[10px]">
                     {conv.status === 'IA_ATIVA' ? 'IA ATIVA' : 'HUMANO'}
                   </Badge>
                 </div>
@@ -225,44 +236,65 @@ export function CrmInboxPage() {
         </div>
 
         {/* Janela de Mensagens + Transbordo Humano */}
-        <div className="col-span-8 flex flex-col justify-between bg-stone-50">
+        <div
+          className={`${
+            mobileShowChat ? 'flex' : 'hidden md:flex'
+          } flex-col justify-between bg-stone-50 md:col-span-8 overflow-hidden`}
+        >
           {activeConv && (
             <>
-              <div className="flex items-center justify-between border-b bg-card px-5 py-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">{activeConv.contact_name}</span>
-                    {activeCustomer && (
-                      <Badge variant="outline">{activeCustomer.customer_type}</Badge>
-                    )}
-                  </div>
-                  <p className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                    <Phone className="h-3 w-3" /> +{activeConv.whatsapp_phone}
-                    {activeCustomer?.customer_type === 'B2B' && (
-                      <span className="text-emerald-700 font-semibold">
-                        • Crédito Disp: {formatBRL(activeCustomer.credit_limit - activeCustomer.current_balance_due)}
+              <div className="flex flex-wrap items-center justify-between gap-2.5 border-b bg-card px-3.5 py-2.5 sm:px-5 sm:py-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobileShowChat(false)}
+                    className="h-8 px-2 md:hidden"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Conversas
+                  </Button>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="truncate font-bold text-sm sm:text-base">{activeConv.contact_name}</span>
+                      {activeCustomer && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {activeCustomer.customer_type}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] sm:text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Phone className="h-3 w-3" /> +{activeConv.whatsapp_phone}
                       </span>
-                    )}
-                  </p>
+                      {activeCustomer?.customer_type === 'B2B' && (
+                        <span className="text-emerald-700 font-semibold">
+                          • Disp: {formatBRL(activeCustomer.credit_limit - activeCustomer.current_balance_due)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
 
                 <Button
+                  size="sm"
                   variant={activeConv.status === 'IA_ATIVA' ? 'warning' : 'default'}
                   onClick={handleToggleHumanTakeover}
+                  className="w-full sm:w-auto text-xs"
                 >
                   {activeConv.status === 'IA_ATIVA' ? (
                     <>
-                      <UserCheck className="h-4 w-4" /> Assumir Atendimento (Transbordo Humano)
+                      <UserCheck className="h-4 w-4 shrink-0" /> Assumir Atendimento (Transbordo Humano)
                     </>
                   ) : (
                     <>
-                      <Bot className="h-4 w-4" /> Devolver Conversa ao Agente de IA
+                      <Bot className="h-4 w-4 shrink-0" /> Devolver Conversa ao Agente de IA
                     </>
                   )}
                 </Button>
               </div>
 
-              <div className="flex-1 space-y-3 overflow-y-auto p-5">
+              <div className="flex-1 space-y-3 overflow-y-auto p-3.5 sm:p-5">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -275,7 +307,7 @@ export function CrmInboxPage() {
                     }`}
                   >
                     <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                      className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm ${
                         msg.sender === 'CLIENTE'
                           ? 'bg-white text-stone-900'
                           : msg.sender === 'IA'
@@ -289,26 +321,27 @@ export function CrmInboxPage() {
                         <span>{msg.sender}</span>
                         <span>{new Date(msg.created_at).toLocaleTimeString('pt-BR')}</span>
                       </div>
-                      <p>{msg.content}</p>
+                      <p className="break-words">{msg.content}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <form onSubmit={handleSendHumanMessage} className="flex gap-2 border-t bg-card p-3">
+              <form onSubmit={handleSendHumanMessage} className="flex gap-2 border-t bg-card p-2.5 sm:p-3">
                 <Input
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   disabled={activeConv.status !== 'HUMANO'}
                   placeholder={
                     activeConv.status === 'HUMANO'
-                      ? 'Digite a resposta como atendente humano...'
-                      : 'Agente de IA está ativo. Clique em "Assumir Atendimento" acima para digitar.'
+                      ? 'Digite a resposta como atendente...'
+                      : 'Agente IA ativo. Toque em "Assumir Atendimento" para responder.'
                   }
                   className="h-11"
                 />
-                <Button type="submit" size="lg" disabled={activeConv.status !== 'HUMANO'}>
-                  <Send className="h-4 w-4" /> Enviar
+                <Button type="submit" size="lg" disabled={activeConv.status !== 'HUMANO'} className="shrink-0 px-4">
+                  <Send className="h-4 w-4" />
+                  <span className="hidden sm:inline">Enviar</span>
                 </Button>
               </form>
             </>
@@ -317,44 +350,44 @@ export function CrmInboxPage() {
       </div>
 
       {/* Console de Orquestração IA + Contas B2B */}
-      <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="lg:col-span-6">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-12">
+        <Card className="lg:col-span-6 overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Webhook className="h-5 w-5 text-primary" /> Endpoints para Orquestração de IA (n8n / Evolution API)
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Webhook className="h-5 w-5 shrink-0 text-primary" /> Endpoints para Orquestração de IA (n8n / Evolution API)
             </CardTitle>
             <CardDescription>
               Teste ao vivo os dois webhooks estruturados consumidos pelo Agente de IA.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={handleTestContextWebhook}>
-                <Play className="h-4 w-4 text-emerald-600" /> 1. Testar GET /api/ai/customer-context
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+              <Button variant="outline" onClick={handleTestContextWebhook} className="w-full sm:w-auto justify-start text-xs sm:text-sm">
+                <Play className="h-4 w-4 shrink-0 text-emerald-600" /> 1. Testar GET /api/ai/customer-context
               </Button>
-              <Button variant="default" onClick={handleSimulateAiOrderWebhook}>
-                <Sparkles className="h-4 w-4" /> 2. Simular POST /api/ai/create-order (150 Pães Hambúrguer 07h)
+              <Button variant="default" onClick={handleSimulateAiOrderWebhook} className="w-full sm:w-auto justify-start text-xs sm:text-sm">
+                <Sparkles className="h-4 w-4 shrink-0" /> 2. Simular POST /api/ai/create-order (150 Pães 07h)
               </Button>
             </div>
 
-            <pre className="max-h-64 overflow-auto rounded-xl bg-stone-950 p-4 font-mono text-xs text-emerald-400">
+            <pre className="max-h-64 overflow-auto rounded-xl bg-stone-950 p-3.5 font-mono text-xs text-emerald-400">
               {webhookOutputJson ||
-                `// Clique em um dos botões acima para inspecionar o payload real\n// 1. GET  /api/ai/customer-context?phone=5511987650001\n// 2. POST /api/ai/create-order -> cria pedido B2B e dispara alerta no KDS do Padeiro`}
+                `// Toque em um dos botões acima para inspecionar o payload real\n// 1. GET  /api/ai/customer-context?phone=5511987650001\n// 2. POST /api/ai/create-order -> cria pedido B2B e dispara alerta no KDS do Padeiro`}
             </pre>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-6">
+        <Card className="lg:col-span-6 overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" /> Carteira Corporativa B2B (`b2b_accounts`)
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Building2 className="h-5 w-5 shrink-0 text-primary" /> Carteira Corporativa B2B (`b2b_accounts`)
             </CardTitle>
             <CardDescription>
               Controle de limite de crédito, saldo devedor, dia de faturamento e pedidos recorrentes.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-[520px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Razão Social / CNPJ</TableHead>
@@ -394,4 +427,3 @@ export function CrmInboxPage() {
     </div>
   );
 }
-

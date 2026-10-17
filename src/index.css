@@ -70,9 +70,22 @@
     @apply border-border;
   }
 
+  html,
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
     font-feature-settings: 'tnum' 1, 'cv11' 1; /* números tabulares: alinhamento de valores */
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Evita auto-zoom do iOS Safari ao focar inputs com fonte menor que 16px */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 }
 
@@ -82,12 +95,21 @@
     @apply min-h-14 min-w-14;
   }
 
-  /* Evita zoom/seleção acidental em toques rápidos no tablet do padeiro. */
+  /* Evita zoom/seleção acidental em toques rápidos no tablet/celular. */
   .no-touch-callout {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     touch-action: manipulation;
+  }
+
+  /* Safe area insets para iPhone (Dynamic Island / Home Indicator) e Android Gesture Bar */
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 }
 

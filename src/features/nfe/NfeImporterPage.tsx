@@ -170,28 +170,28 @@ export function NfeImporterPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-5 p-3.5 sm:space-y-6 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             Entrada de Nota Fiscal Eletrônica (Parser XML NF-e & De/Para de Unidades)
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground sm:text-sm">
             Converte fardos/sacos/caixas (`uCom`) para a unidade base (`g`, `ml`, `un`) e recalcula o Custo Médio Ponderado automaticamente.
           </p>
         </div>
 
-        <Button variant="default" onClick={() => loadXmlText(SAMPLE_BAKERY_NFE_XML)}>
-          <Sparkles className="h-4 w-4" /> Carregar XML NF-e de Exemplo (Moinho 50kg)
+        <Button variant="default" className="w-full sm:w-auto text-xs sm:text-sm" onClick={() => loadXmlText(SAMPLE_BAKERY_NFE_XML)}>
+          <Sparkles className="h-4 w-4 shrink-0" /> Carregar XML NF-e de Exemplo (Moinho 50kg)
         </Button>
       </div>
 
       {/* Zona Drag and Drop */}
       <Card className="border-2 border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+        <CardContent className="flex flex-col items-center justify-center px-4 py-6 sm:py-8 text-center">
           <UploadCloud className="mb-3 h-10 w-10 text-primary" />
-          <p className="text-base font-semibold">
-            Arraste e solte o arquivo <code className="font-mono">.xml</code> da NF-e aqui ou selecione do computador
+          <p className="text-sm sm:text-base font-semibold">
+            Arraste e solte o arquivo <code className="font-mono">.xml</code> da NF-e aqui ou selecione do dispositivo
           </p>
           <p className="mb-4 text-xs text-muted-foreground">
             Leitura nativa das tags &lt;det&gt;, &lt;prod&gt;, xProd, qCom, uCom, vUnCom e NCM.
@@ -200,34 +200,34 @@ export function NfeImporterPage() {
             type="file"
             accept=".xml,text/xml"
             onChange={(e) => handleFileUpload(e.target.files?.[0])}
-            className="text-xs file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-semibold file:text-primary-foreground"
+            className="max-w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-xs file:font-semibold file:text-primary-foreground"
           />
         </CardContent>
       </Card>
 
       {invoice && (
-        <Card>
-          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4 border-b">
-            <div>
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3.5 border-b">
+            <div className="min-w-0 max-w-full">
               <div className="flex items-center gap-2">
-                <FileCode2 className="h-5 w-5 text-primary" />
-                <CardTitle>
+                <FileCode2 className="h-5 w-5 shrink-0 text-primary" />
+                <CardTitle className="text-base sm:text-lg">
                   NF-e #{invoice.invoiceNumber} (Série {invoice.series}) — {invoice.supplierName}
                 </CardTitle>
               </div>
-              <CardDescription className="font-mono text-xs">
+              <CardDescription className="mt-1 break-all font-mono text-[11px] sm:text-xs">
                 CNPJ: {invoice.supplierCnpj} • Chave: {invoice.accessKey} • Total NF:{' '}
                 <strong>{formatBRL(invoice.totalAmount)}</strong>
               </CardDescription>
             </div>
 
-            <Button size="lg" variant="success" disabled={isConfirming} onClick={handleConfirmEntry}>
-              <CheckCircle2 className="h-5 w-5" /> Confirmar Conversão e Dar Entrada no Estoque
+            <Button size="lg" variant="success" className="w-full sm:w-auto text-xs sm:text-sm" disabled={isConfirming} onClick={handleConfirmEntry}>
+              <CheckCircle2 className="h-5 w-5 shrink-0" /> Confirmar Conversão e Dar Entrada
             </Button>
           </CardHeader>
 
-          <CardContent className="pt-4">
-            <Table>
+          <CardContent className="overflow-x-auto pt-4">
+            <Table className="min-w-[820px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>

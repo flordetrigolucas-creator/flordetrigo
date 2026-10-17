@@ -201,16 +201,18 @@ export function BakerKdsPage() {
   };
 
   return (
-    <div className="theme-kds no-touch-callout min-h-screen space-y-6 bg-background p-6 text-foreground">
+    <div className="theme-kds no-touch-callout min-h-screen space-y-5 bg-background p-3.5 text-foreground sm:space-y-6 sm:p-6">
       {/* Cabeçalho estilo Totem / Tablet Industrial */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3.5 sm:gap-4 sm:pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-            <ChefHat className="h-8 w-8" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md sm:h-14 sm:w-14">
+            <ChefHat className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
           <div>
-            <h1 className="text-kds-title tracking-tight">Tela do Padeiro • KDS & Masseira</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl font-extrabold tracking-tight sm:text-kds-title">
+              Tela do Padeiro • KDS & Masseira
+            </h1>
+            <p className="text-xs text-muted-foreground sm:text-sm">
               Toque rápido • Escalabilidade instantânea de batida • Baixa FEFO atômica
             </p>
           </div>
@@ -223,16 +225,16 @@ export function BakerKdsPage() {
           {openAlerts.map((alert) => (
             <div
               key={alert.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border-2 border-amber-500 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm"
+              className="flex flex-col justify-between gap-3 rounded-2xl border-2 border-amber-500 bg-amber-50 px-4 py-3.5 text-amber-950 shadow-sm sm:flex-row sm:items-center sm:px-5 sm:py-4"
             >
-              <div className="flex items-center gap-3">
-                <BellRing className="h-7 w-7 animate-bounce text-amber-600" />
+              <div className="flex items-start gap-3 sm:items-center">
+                <BellRing className="mt-0.5 h-6 w-6 shrink-0 animate-bounce text-amber-600 sm:mt-0 sm:h-7 sm:w-7" />
                 <div>
-                  <p className="text-base font-bold">{alert.title}</p>
-                  <p className="text-sm">{alert.message}</p>
+                  <p className="text-sm font-bold sm:text-base">{alert.title}</p>
+                  <p className="text-xs sm:text-sm">{alert.message}</p>
                 </div>
               </div>
-              <Button size="lg" variant="default" onClick={() => handleAckAlert(alert.id)}>
+              <Button size="lg" variant="default" className="w-full sm:w-auto shrink-0" onClick={() => handleAckAlert(alert.id)}>
                 Ciente na Produção
               </Button>
             </div>
@@ -240,24 +242,24 @@ export function BakerKdsPage() {
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-12">
+      <div className="grid gap-5 sm:gap-6 xl:grid-cols-12">
         {/* Coluna 1: Calculadora de Masseira Dinâmica */}
         <Card className="border-2 xl:col-span-5">
           <CardHeader className="bg-amber-500/10">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Scale className="h-6 w-6 text-primary" /> Calculadora de Masseira (Escala Dinâmica)
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Scale className="h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6" /> Calculadora de Masseira (Escala Dinâmica)
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="text-xs sm:text-sm">
               Digite quantos quilos de farinha vai bater agora; todas as gramaturas são recalculadas na hora.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5 pt-5">
+          <CardContent className="space-y-4 pt-4 sm:space-y-5 sm:pt-5">
             <div className="space-y-2">
-              <Label className="text-base font-semibold">1. Receita / Ficha Técnica</Label>
+              <Label className="text-sm font-semibold sm:text-base">1. Receita / Ficha Técnica</Label>
               <select
                 value={selectedSheet?.id ?? ''}
                 onChange={(e) => setSelectedSheetId(e.target.value)}
-                className="h-14 w-full rounded-xl border-2 border-input bg-card px-4 text-base font-bold"
+                className="h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-sm font-bold sm:h-14 sm:px-4 sm:text-base"
               >
                 {sheets.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -268,22 +270,22 @@ export function BakerKdsPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">2. Quantidade de Farinha da Batida (kg)</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-sm font-semibold sm:text-base">2. Farinha da Batida (kg)</Label>
                 {scaledPreview && (
-                  <Badge variant="default" className="text-sm">
+                  <Badge variant="default" className="text-xs sm:text-sm">
                     Fator Escala: {scaledPreview.scaling_factor}x
                   </Badge>
                 )}
               </div>
 
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {QUICK_FLOUR_PRESETS_KG.map((kg) => (
                   <Button
                     key={kg}
                     type="button"
                     variant={desiredFlourKg === kg ? 'default' : 'outline'}
-                    className="h-12 font-mono text-base font-bold"
+                    className="h-11 font-mono text-sm font-bold sm:h-12 sm:text-base"
                     onClick={() => setDesiredFlourKg(kg)}
                   >
                     {kg}kg
@@ -489,7 +491,7 @@ export function BakerKdsPage() {
                         <strong>{formatBRL(order.total_production_cost ?? 0)}</strong>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row">
                         {order.status === 'PLANEJADA' && (
                           <Button
                             size="xl"
