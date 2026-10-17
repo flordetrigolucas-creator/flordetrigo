@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Backoffice — tema claro, denso, neutro (stone) com primária "trigo". */
+  :root {
+    --background: 40 20% 98%;
+    --foreground: 24 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 24 10% 10%;
+    --primary: 32 85% 42%;
+    --primary-foreground: 40 100% 98%;
+    --secondary: 40 15% 92%;
+    --secondary-foreground: 24 10% 15%;
+    --muted: 40 12% 94%;
+    --muted-foreground: 25 6% 42%;
+    --accent: 38 60% 92%;
+    --accent-foreground: 24 30% 18%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 64% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 24 10% 10%;
+    --border: 30 12% 86%;
+    --input: 30 12% 82%;
+    --ring: 32 85% 42%;
+    --radius: 0.5rem;
+    --sidebar: 24 12% 11%;
+    --sidebar-foreground: 40 20% 92%;
+    --sidebar-accent: 24 10% 18%;
+  }
+
+  /* PDV — altíssimo contraste (WCAG AAA) para operação rápida no balcão. */
+  .theme-pos {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 100%;
+    --primary: 45 100% 52%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 72%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 90% 56%;
+    --success: 142 80% 45%;
+    --success-foreground: 0 0% 0%;
+    --warning: 45 100% 52%;
+    --border: 0 0% 28%;
+    --input: 0 0% 32%;
+    --ring: 45 100% 52%;
+  }
+
+  /* Tela do Padeiro (KDS) — limpa, fundo claro quente, alto contraste moderado. */
+  .theme-kds {
+    --background: 36 33% 96%;
+    --foreground: 24 20% 8%;
+    --card: 0 0% 100%;
+    --primary: 24 90% 45%;
+    --primary-foreground: 0 0% 100%;
+    --border: 30 15% 80%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'tnum' 1, 'cv11' 1; /* números tabulares: alinhamento de valores */
+  }
+}
+
+@layer utilities {
+  /* Alvos de toque mínimos (PDV/KDS): 56px. */
+  .touch-target {
+    @apply min-h-14 min-w-14;
+  }
+
+  /* Evita zoom/seleção acidental em toques rápidos no tablet do padeiro. */
+  .no-touch-callout {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+}
+
